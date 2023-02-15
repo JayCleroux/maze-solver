@@ -6,7 +6,6 @@
 #include <vector>
 #include "Stack.h"
 
-
 class Maze {
 private:
     int m_x, m_y;

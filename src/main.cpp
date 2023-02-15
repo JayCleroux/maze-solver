@@ -15,7 +15,3 @@ int main(int argc, char* argv[]) {
     maze.solve_maze(out_file_name);
     return 0;
 }
-
-
-
-
