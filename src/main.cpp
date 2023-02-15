@@ -1,8 +1,12 @@
-#include <iostream>
-
-using namespace std;
+#include "Maze.h"
 
 int main() {
-    cout << "Hello World!" << endl;
+    Maze maze;
+    maze.read_file();
+    maze.solve_maze();
     return 0;
 }
+
+
+
+
