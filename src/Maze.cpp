@@ -13,7 +13,7 @@ Maze::Maze() {
     m_y = 0;
     m_grid_size = 25;
     // initialize each grid location to unvisited
-    for (auto &i: visited) {
+    for (auto &i: m_visited) {
         for (bool &j: i) {
             j = false;
         }
@@ -21,8 +21,7 @@ Maze::Maze() {
 }
 
 // read in the maze file and store it in the maze object
-void Maze::read_file(const std::string &file_name) {
-    m_file_name = file_name;
+bool Maze::read_file(const std::string &file_name) {
     std::ifstream file(file_name);
     if (file.is_open()) {
         std::string line;
@@ -30,12 +29,15 @@ void Maze::read_file(const std::string &file_name) {
             m_lines.push_back(line);
         }
         file.close();
-    } // mark the entrance square to the left of the initial grid location
+    }else{
+        return false;
+    }// mark the entrance square to the left of the initial grid location
     m_lines[1][0] = '#';
+    return true;
 }
 
 // function to solve the maze
-void Maze::solve_maze() {
+void Maze::solve_maze(const std::string& file_name) {
 
     Stack stack;
     bool maze_solved = false;
@@ -52,7 +54,7 @@ void Maze::solve_maze() {
         // mark each move as visited
         mark_visited(stack);
     }
-    std::ofstream os("solution.txt");
+    std::ofstream os(file_name);
 
     os << *this;
 
@@ -66,7 +68,7 @@ bool Maze::look_for_move(Stack &stack) {
 
     while (available_moves.empty()) {
         // mark current square as visited
-        visited[m_x][m_y] = true;
+        m_visited[m_x][m_y] = true;
         // get the most recent direction moved from the top of the stack
         char direction = stack.top();
         // clear available moves
@@ -87,19 +89,19 @@ bool Maze::look_for_move(Stack &stack) {
             bool remove_move = false;
 
             if (move == 'S') {
-                if (visited[m_x + 1][m_y]) {
+                if (m_visited[m_x + 1][m_y]) {
                     remove_move = true;
                 }
             } else if (move == 'N') {
-                if (visited[m_x - 1][m_y]) {
+                if (m_visited[m_x - 1][m_y]) {
                     remove_move = true;
                 }
             } else if (move == 'W') {
-                if (visited[m_x][m_y - 1]) {
+                if (m_visited[m_x][m_y - 1]) {
                     remove_move = true;
                 }
             } else if (move == 'E') {
-                if (visited[m_x][m_y + 1]) {
+                if (m_visited[m_x][m_y + 1]) {
                     remove_move = true;
                 }
             }
@@ -184,25 +186,25 @@ void Maze::mark_visited(Stack &stack) {
     switch (direction) {
         case 'W':
             if (east != '+' && east != '-' && east != '|') {
-                visited[m_x][m_y + 1] = true;
+                m_visited[m_x][m_y + 1] = true;
                 east = '#';
             }
             break;
         case 'E':
             if (west != '+' && west != '-' && west != '|') {
-                visited[m_x][m_y - 1] = true;
+                m_visited[m_x][m_y - 1] = true;
                 west = '#';
             }
             break;
         case 'S':
             if (north != '+' && north != '-' && north != '|') {
-                visited[m_x - 1][m_y] = true;
+                m_visited[m_x - 1][m_y] = true;
                 north = '#';
             }
             break;
         case 'N':
             if (south != '+' && south != '-' && south != '|') {
-                visited[m_x + 1][m_y] = true;
+                m_visited[m_x + 1][m_y] = true;
                 south = '#';
             }
             break;
