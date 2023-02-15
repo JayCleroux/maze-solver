@@ -9,22 +9,21 @@
 
 class Maze {
 private:
-    int moves;
     int m_x, m_y;
+    std::string m_file_name;
     int m_grid_size;
     bool visited[25][25]{};
-
     std::vector<std::string> m_lines;
 public:
     Maze();
 
-    void read_file();
+    void read_file(const std::string& file_name);
 
     void solve_maze();
 
     bool look_for_move(Stack &stack);
 
-    friend std::ostream &operator<<(std::ostream &output, Maze &maze);
+    friend std::ofstream &operator<<(std::ofstream &output, Maze &maze);
 
     void finish_maze();
 
@@ -34,11 +33,12 @@ public:
 
     bool move_grid_location(char direction);
 
-    void move_back_grid_location(char direction, Stack &stack);
+    void move_back_grid_location(char direction);
 
     void mark_visited(Stack &stack);
 
-    void reset_visited();
+    void save_file();
+
 };
 
 #endif //ASSIGNMENT_2_MAZE_H

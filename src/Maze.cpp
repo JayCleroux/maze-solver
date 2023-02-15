@@ -8,10 +8,11 @@
 #include <algorithm>
 
 Maze::Maze() {
-    moves = 0;
+
     m_x = 0;
     m_y = 0;
     m_grid_size = 25;
+    // initialize each grid location to unvisited
     for (auto &i: visited) {
         for (bool &j: i) {
             j = false;
@@ -19,67 +20,70 @@ Maze::Maze() {
     }
 }
 
-void Maze::read_file() {
-    std::ifstream file("maze.txt");
+// read in the maze file and store it in the maze object
+void Maze::read_file(const std::string &file_name) {
+    m_file_name = file_name;
+    std::ifstream file(file_name);
     if (file.is_open()) {
         std::string line;
         while (getline(file, line)) {
             m_lines.push_back(line);
         }
         file.close();
-    }
+    } // mark the entrance square to the left of the initial grid location
     m_lines[1][0] = '#';
 }
 
-std::ostream &operator<<(std::ostream &output, Maze &maze) {
-
-    for (int i = 0; i < (maze.m_grid_size * 2 + 1); i++) {
-        for (int j = 0; j < (maze.m_grid_size * 2 + 1); j++) {
-            std::cout << maze.m_lines[i][j];
-        }
-        std::cout << std::endl;
-    }
-
-    return output;
-}
-
+// function to solve the maze
 void Maze::solve_maze() {
+
     Stack stack;
     bool maze_solved = false;
+    // initialize the starting grid location
     m_lines[1][1] = '#';
     while (!maze_solved) {
-        //reset_visited();
-        //visited[m_x][m_y] = true;
+        // if the grid locations are 24 / 24 the maze is complete
         if (m_x == 24 && m_y == 24) {
             maze_solved = true;
             finish_maze();
         } else {
             look_for_move(stack);
         }
+        // mark each move as visited
         mark_visited(stack);
-        std::cout << stack;
-        std::cout << this->moves << std::endl;
-        std::cout << *this;
-        //visited[m_x][m_y] = true;
     }
+    std::ofstream os("solution.txt");
+
+    os << *this;
+
 }
 
+// function to look for a valid move, will respond to dead ends by looping until
+// it finds an available unvisited move
 bool Maze::look_for_move(Stack &stack) {
 
     std::vector<char> available_moves = get_available_moves();
 
     while (available_moves.empty()) {
+        // mark current square as visited
         visited[m_x][m_y] = true;
+        // get the most recent direction moved from the top of the stack
         char direction = stack.top();
+        // clear available moves
         available_moves.clear();
-        move_back_grid_location(direction, stack);
+        // move back in that direction
+        move_back_grid_location(direction);
+        // pop off the last entry in the stack
         auto popped = stack.pop();
         m_x = std::get<0>(popped);
         m_y = std::get<1>(popped);
+        // get the available moves
         available_moves = get_available_moves();
-        for (auto it = available_moves.begin();
-             it != available_moves.end(); ) {
-            char move = *it;
+        // iterate through the available moves and remove any that lead to a
+        // visited square
+        for (auto i = available_moves.begin();
+             i != available_moves.end();) {
+            char move = *i;
             bool remove_move = false;
 
             if (move == 'S') {
@@ -101,12 +105,11 @@ bool Maze::look_for_move(Stack &stack) {
             }
 
             if (remove_move) {
-                it = available_moves.erase(it);
+                i = available_moves.erase(i);
             } else {
-                ++it;
+                ++i;
             }
         }
-        std::cout << *this;
     }
 
     //Shuffle the vector to select a random direction
@@ -114,21 +117,22 @@ bool Maze::look_for_move(Stack &stack) {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::shuffle(available_moves.begin(), available_moves.end(),
                  std::default_random_engine(seed));
-
+    // select the first available move from the shuffled vector
     char move = available_moves[0];
+    // try the move
     try_move(move, stack);
-    moves++;
     return true;
 }
 
-void Maze::move_back_grid_location(char direction, Stack &stack) {
-    moves++;
+// function to move back a grid location for the case of dead ends
+void Maze::move_back_grid_location(char direction) {
+    // get the values of the characters around the current position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
     char &east = m_lines[(m_x * 2) + 1][(m_y * 2) + 2];
     char &south = m_lines[(m_x * 2) + 2][(m_y * 2) + 1];
     char &position = m_lines[(m_x * 2) + 1][(m_y * 2) + 1];
-
+    // remove the path of the dead end
     if (direction == 'N') {
         if (m_x < 24) {
             south = ' ';
@@ -156,14 +160,20 @@ void Maze::move_back_grid_location(char direction, Stack &stack) {
     }
 }
 
+// function to mark the finishing squares of the maze
 void Maze::finish_maze() {
+
     char &east = m_lines[m_x * 2 + 1][m_y * 2 + 2];
     char &position = m_lines[m_x * 2 + 1][m_y * 2 + 1];
     position = '#';
     east = '#';
 }
 
+// function to mark the current grid location on the maze, and mark it as
+// visited
 void Maze::mark_visited(Stack &stack) {
+    // get the most recent direction from the top of the stack
+    // as well as the values of the characters around the current position
     char direction = stack.top();
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
@@ -199,34 +209,35 @@ void Maze::mark_visited(Stack &stack) {
         default:
             break;
     }
-
+    // mark the current position
     if (position != '+' && position != '-' && position != '|') {
         position = '#';
     }
 }
 
+// function to move the grid location on the maze
 bool Maze::move_grid_location(char direction) {
+    // get the value of the characters around the grid position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
     char &east = m_lines[(m_x * 2) + 1][(m_y * 2) + 2];
     char &south = m_lines[(m_x * 2) + 2][(m_y * 2) + 1];
-    char &position = m_lines[(m_x * 2) + 1][(m_y * 2) + 1];
-
+    // mark the character between the grid movements with a # and adjust x or y
     switch (direction) {
         case 'N':
-            north = (north != '+' && north != '-' && north != '|') ? '#' : north;
+            north = '#';
             m_x--;
             break;
         case 'E':
-            east = (east != '+' && east != '-' && east != '|') ? '#' : east;
+            east = '#';
             m_y++;
             break;
         case 'S':
-            south = (south != '+' && south != '-' && south != '|') ? '#' : south;
+            south = '#';
             m_x++;
             break;
         case 'W':
-            west = (west != '+' && west != '-' && west != '|') ? '#' : west;
+            west = '#';
             m_y--;
             break;
         default:
@@ -235,10 +246,13 @@ bool Maze::move_grid_location(char direction) {
     return true;
 }
 
+// function to take a direction and check if the move is possible
 bool Maze::try_move(char direction, Stack &stack) {
+
     int x = m_x;
     int y = m_y;
     switch (direction) {
+        // push the direction moved along with the coordinates onto the stack
         case 'W':
             if (y > 0) {
                 stack.push(x, y, 'W');
@@ -273,13 +287,16 @@ bool Maze::try_move(char direction, Stack &stack) {
     return false;
 }
 
+// function to get the available moves around the current grid location
 std::vector<char> Maze::get_available_moves() {
+    // get the values of the characters around the current position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
     char &east = m_lines[(m_x * 2) + 1][(m_y * 2) + 2];
     char &south = m_lines[(m_x * 2) + 2][(m_y * 2) + 1];
 
     std::vector<char> available_moves;
+    // if the character is one space, it is an available move
     if (east == ' ') {
         available_moves.push_back('E');
     }
@@ -293,4 +310,16 @@ std::vector<char> Maze::get_available_moves() {
         available_moves.push_back('N');
     }
     return available_moves;
+}
+
+// overloaded output operator to display the maze
+std::ofstream &operator<<(std::ofstream &output, Maze &maze) {
+
+    for (int i = 0; i < (maze.m_grid_size * 2 + 1); i++) {
+        for (int j = 0; j < (maze.m_grid_size * 2 + 1); j++) {
+            output << maze.m_lines[i][j];
+        }
+        output << std::endl;
+    }
+    return output;
 }
