@@ -46,6 +46,7 @@ void Maze::solve_maze(const std::string& file_name) {
     while (!maze_solved) {
         // if the grid locations are 24 / 24 the maze is complete
         if (m_x == 24 && m_y == 24) {
+            std::cout << "Maze solved and saved to output file.";
             maze_solved = true;
             finish_maze();
         } else {
