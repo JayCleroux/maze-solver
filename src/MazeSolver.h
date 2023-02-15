@@ -1,19 +1,19 @@
-#ifndef ASSIGNMENT_2_MAZE_H
-#define ASSIGNMENT_2_MAZE_H
+#ifndef ASSIGNMENT_2_MAZESOLVER_H
+#define ASSIGNMENT_2_MAZESOLVER_H
 
 #include <string>
 #include <iostream>
 #include <vector>
 #include "Stack.h"
 
-class Maze {
+class MazeSolver {
 private:
     int m_x, m_y;
     int m_grid_size;
     bool m_visited[25][25]{};
     std::vector<std::string> m_lines;
 public:
-    Maze();
+    MazeSolver();
 
     bool read_file(const std::string& file_name);
 
@@ -21,7 +21,7 @@ public:
 
     bool look_for_move(Stack &stack);
 
-    friend std::ofstream &operator<<(std::ofstream &output, Maze &maze);
+    friend std::ofstream &operator<<(std::ofstream &output, MazeSolver &maze);
 
     void finish_maze();
 
@@ -37,4 +37,4 @@ public:
 
 };
 
-#endif //ASSIGNMENT_2_MAZE_H
+#endif //ASSIGNMENT_2_MAZESOLVER_H

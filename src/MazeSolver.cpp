@@ -1,13 +1,13 @@
 #include <iostream>
 #include <fstream>
-#include "Maze.h"
+#include "MazeSolver.h"
 #include "Stack.h"
 #include <chrono>
 #include <vector>
 #include <random>
 #include <algorithm>
 
-Maze::Maze() {
+MazeSolver::MazeSolver() {
 
     m_x = 0;
     m_y = 0;
@@ -21,7 +21,7 @@ Maze::Maze() {
 }
 
 // read in the maze file and store it in the maze object
-bool Maze::read_file(const std::string &file_name) {
+bool MazeSolver::read_file(const std::string &file_name) {
     std::ifstream file(file_name);
     if (file.is_open()) {
         std::string line;
@@ -29,15 +29,14 @@ bool Maze::read_file(const std::string &file_name) {
             m_lines.push_back(line);
         }
         file.close();
-    }else{
+    } else {
         return false;
     }// mark the entrance square to the left of the initial grid location
     m_lines[1][0] = '#';
     return true;
 }
 
-// function to solve the maze
-void Maze::solve_maze(const std::string& file_name) {
+void MazeSolver::solve_maze(const std::string &file_name) {
 
     Stack stack;
     bool maze_solved = false;
@@ -55,15 +54,15 @@ void Maze::solve_maze(const std::string& file_name) {
         // mark each move as visited
         mark_visited(stack);
     }
+    // save the maze to the output file once the maze is completed
     std::ofstream os(file_name);
-
     os << *this;
 
 }
 
 // function to look for a valid move, will respond to dead ends by looping until
 // it finds an available unvisited move
-bool Maze::look_for_move(Stack &stack) {
+bool MazeSolver::look_for_move(Stack &stack) {
 
     std::vector<char> available_moves = get_available_moves();
 
@@ -128,7 +127,7 @@ bool Maze::look_for_move(Stack &stack) {
 }
 
 // function to move back a grid location for the case of dead ends
-void Maze::move_back_grid_location(char direction) {
+void MazeSolver::move_back_grid_location(char direction) {
     // get the values of the characters around the current position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
@@ -164,7 +163,7 @@ void Maze::move_back_grid_location(char direction) {
 }
 
 // function to mark the finishing squares of the maze
-void Maze::finish_maze() {
+void MazeSolver::finish_maze() {
 
     char &east = m_lines[m_x * 2 + 1][m_y * 2 + 2];
     char &position = m_lines[m_x * 2 + 1][m_y * 2 + 1];
@@ -174,7 +173,7 @@ void Maze::finish_maze() {
 
 // function to mark the current grid location on the maze, and mark it as
 // visited
-void Maze::mark_visited(Stack &stack) {
+void MazeSolver::mark_visited(Stack &stack) {
     // get the most recent direction from the top of the stack
     // as well as the values of the characters around the current position
     char direction = stack.top();
@@ -219,7 +218,7 @@ void Maze::mark_visited(Stack &stack) {
 }
 
 // function to move the grid location on the maze
-bool Maze::move_grid_location(char direction) {
+bool MazeSolver::move_grid_location(char direction) {
     // get the value of the characters around the grid position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
@@ -250,7 +249,7 @@ bool Maze::move_grid_location(char direction) {
 }
 
 // function to take a direction and check if the move is possible
-bool Maze::try_move(char direction, Stack &stack) {
+bool MazeSolver::try_move(char direction, Stack &stack) {
 
     int x = m_x;
     int y = m_y;
@@ -291,7 +290,7 @@ bool Maze::try_move(char direction, Stack &stack) {
 }
 
 // function to get the available moves around the current grid location
-std::vector<char> Maze::get_available_moves() {
+std::vector<char> MazeSolver::get_available_moves() {
     // get the values of the characters around the current position
     char &north = m_lines[(m_x * 2)][(m_y * 2) + 1];
     char &west = m_lines[(m_x * 2) + 1][m_y * 2];
@@ -316,7 +315,7 @@ std::vector<char> Maze::get_available_moves() {
 }
 
 // overloaded output operator to display the maze
-std::ofstream &operator<<(std::ofstream &output, Maze &maze) {
+std::ofstream &operator<<(std::ofstream &output, MazeSolver &maze) {
 
     for (int i = 0; i < (maze.m_grid_size * 2 + 1); i++) {
         for (int j = 0; j < (maze.m_grid_size * 2 + 1); j++) {
