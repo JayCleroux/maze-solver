@@ -31,7 +31,8 @@ bool MazeSolver::read_file(const std::string &file_name) {
         file.close();
     } else {
         return false;
-    }// mark the entrance square to the left of the initial grid location
+    }
+    // mark the entrance square to the left of the initial grid location
     m_lines[1][0] = '#';
     return true;
 }
@@ -42,6 +43,7 @@ void MazeSolver::solve_maze(const std::string &file_name) {
     bool maze_solved = false;
     // initialize the starting grid location
     m_lines[1][1] = '#';
+
     while (!maze_solved) {
         // if the grid locations are 24 / 24 the maze is complete
         if (m_x == 24 && m_y == 24) {
@@ -57,7 +59,6 @@ void MazeSolver::solve_maze(const std::string &file_name) {
     // save the maze to the output file once the maze is completed
     std::ofstream os(file_name);
     os << *this;
-
 }
 
 // function to look for a valid move, will respond to dead ends by looping until
@@ -314,7 +315,7 @@ std::vector<char> MazeSolver::get_available_moves() {
     return available_moves;
 }
 
-// overloaded output operator to display the maze
+// overloaded output operator save the solution to the file
 std::ofstream &operator<<(std::ofstream &output, MazeSolver &maze) {
 
     for (int i = 0; i < (maze.m_grid_size * 2 + 1); i++) {
